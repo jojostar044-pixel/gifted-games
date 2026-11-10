@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>رحلة العباقرة الصغار – لعبة المستوى الأول</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#fff8ef; --ink:#2b2140; --quiet:#6b6280; --card:#ffffff;
+    --num:#3b82f6; --num-s:#e7f1fb;
+    --word:#16a34a; --word-s:#e5f4e4;
+    --logic:#9333ea; --logic-s:#efedff;
+    --shape:#ea580c; --shape-s:#f9ece7;
+    --create:#db2777; --create-s:#fcebf3;
+    --good:#16a34a; --bad:#dc2626; --gold:#f5b301;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:'Baloo Bhaijaan 2', system-ui, sans-serif;
+    background:radial-gradient(circle at 15% 10%, #ffe7f2 0, transparent 35%),
+               radial-gradient(circle at 85% 20%, #e3f0ff 0, transparent 35%),
+               radial-gradient(circle at 50% 100%, #e8f8e6 0, transparent 45%), var(--bg);
+    color:var(--ink); min-height:100vh;
+  }
+  .wrap{max-width:820px;margin:0 auto;padding:18px 16px 40px}
+  .topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+  .brand{font-weight:800;font-size:20px}
+  .pill{background:#fff;border-radius:999px;padding:6px 14px;font-weight:700;box-shadow:0 2px 0 rgba(0,0,0,.06);display:flex;align-items:center;gap:6px}
+  .iconbtn{border:none;background:#fff;border-radius:999px;width:40px;height:40px;font-size:18px;cursor:pointer;box-shadow:0 2px 0 rgba(0,0,0,.06)}
+  .map{display:flex;align-items:center;justify-content:space-between;background:#fff;border-radius:22px;padding:12px 16px;margin-bottom:16px;position:relative;box-shadow:0 3px 0 rgba(0,0,0,.05)}
+  .map .line{position:absolute;right:46px;left:46px;top:38px;height:4px;background:#eee;border-radius:4px;z-index:0}
+  .stop{display:flex;flex-direction:column;align-items:center;gap:2px;z-index:1;min-width:58px}
+  .stop .dot{width:52px;height:52px;border-radius:50%;display:grid;place-items:center;font-size:24px;background:#f3f1f7;border:3px solid #e4e0ec;transition:.3s}
+  .stop .lbl{font-size:13px;font-weight:700;color:var(--quiet)}
+  .stop.active .dot{transform:scale(1.12);box-shadow:0 0 0 6px rgba(245,179,1,.25)}
+  .stop.done .dot{border-color:var(--good)}
+  .card{background:var(--card);border-radius:28px;padding:22px 22px 24px;box-shadow:0 6px 0 rgba(0,0,0,.06);border:3px solid transparent;position:relative;overflow:hidden}
+  .badge{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:4px 14px;font-weight:800;font-size:15px}
+  .qhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:8px;flex-wrap:wrap}
+  .qnum{color:var(--quiet);font-weight:700}
+  .progress{height:10px;background:#f1eef6;border-radius:10px;overflow:hidden;margin:6px 0 14px}
+  .progress > div{height:100%;border-radius:10px;transition:width .4s}
+  h2.q{font-size:26px;line-height:1.5;margin:6px 0 10px}
+  .seq{direction:ltr;unicode-bidi:isolate;display:inline-block;background:#f7f5fb;border-radius:14px;padding:2px 14px;font-size:26px;letter-spacing:1px}
+  .fig{display:flex;justify-content:center;margin:6px 0 12px}
+  .fig svg{max-width:100%;height:auto}
+  .opts{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px}
+  .opt{font-family:inherit;font-size:24px;font-weight:700;border:3px solid #e6e1ef;background:#fff;border-radius:20px;padding:14px 12px;cursor:pointer;display:flex;align-items:center;gap:10px;transition:transform .12s, background .2s, border-color .2s;color:var(--ink);min-height:68px}
+  .opt:hover:not(:disabled){transform:translateY(-3px)}
+  .opt .let{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;font-size:18px;color:#fff;flex:0 0 auto}
+  .opt.right{background:#e5f7e8;border-color:var(--good)}
+  .opt.wrong{background:#fde8e8;border-color:var(--bad);animation:shake .4s}
+  .opt:disabled{cursor:default}
+  .opt .arrow{font-size:30px;direction:ltr}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+  .feedback{display:none;margin-top:16px;border-radius:20px;padding:12px 16px;align-items:center;gap:12px}
+  .feedback.show{display:flex}
+  .feedback.ok{background:#e5f7e8}
+  .feedback.no{background:#fff1e6}
+  .feedback .msg{flex:1}
+  .feedback .msg b{font-size:22px;display:block}
+  .feedback .msg span{color:var(--quiet);font-size:16px}
+  .feedback .mascot{width:80px;flex:0 0 auto}
+  .btn{font-family:inherit;font-size:22px;font-weight:800;border:none;border-radius:999px;padding:12px 30px;cursor:pointer;color:#fff;background:linear-gradient(180deg,#ff8a3d,#f25c05);box-shadow:0 5px 0 #b84300;transition:transform .1s}
+  .btn:active{transform:translateY(3px);box-shadow:0 2px 0 #b84300}
+  .btn.green{background:linear-gradient(180deg,#34d058,#16a34a);box-shadow:0 5px 0 #0d6b2f}
+  .btn.ghost{background:#fff;color:var(--ink);box-shadow:0 4px 0 #ddd}
+  .center{text-align:center}
+  .start h1{font-size:40px;margin:6px 0 0}
+  .start p{font-size:19px;color:var(--quiet);margin:4px 0 12px}
+  .nameinput{font-family:inherit;font-size:22px;border:3px solid #e6e1ef;border-radius:18px;padding:10px 16px;width:min(360px,100%);text-align:center;margin:8px 0 16px}
+  .stations-intro{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin:8px 0 18px}
+  .stations-intro .chip{border-radius:999px;padding:6px 14px;font-weight:700;font-size:16px}
+  .stars-big{font-size:42px;letter-spacing:4px}
+  .rows{display:grid;gap:10px;margin:14px 0}
+  .row{display:flex;align-items:center;gap:10px;font-weight:700}
+  .row .name{width:130px;flex:0 0 auto}
+  .row .bar{flex:1;height:18px;background:#f1eef6;border-radius:12px;overflow:hidden}
+  .row .bar > div{height:100%;border-radius:12px}
+  .row .val{width:52px;text-align:left;direction:ltr}
+  .ideas{display:flex;gap:8px;margin:8px 0}
+  .ideas input{flex:1;font-family:inherit;font-size:19px;border:3px solid #f3c9dc;border-radius:16px;padding:8px 14px}
+  .idea-list{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 4px}
+  .idea-list .tag{background:var(--create-s);border-radius:999px;padding:4px 12px;font-weight:600;display:flex;gap:6px;align-items:center}
+  .idea-list .tag button{border:none;background:none;cursor:pointer;color:var(--quiet);font-size:16px}
+  textarea, .q23 input{font-family:inherit;font-size:18px;border:3px solid #f3c9dc;border-radius:16px;padding:8px 14px;width:100%}
+  .q23{display:grid;gap:8px;margin:8px 0}
+  .garden{background:#f2fbf0;border-radius:20px;margin-top:10px}
+  .note{color:var(--quiet);font-size:15px}
+  .burst{position:fixed;pointer-events:none;font-size:26px;animation:fly 1s ease-out forwards;z-index:50}
+  @keyframes fly{from{opacity:1;transform:translate(0,0) scale(.6)}to{opacity:0;transform:translate(var(--dx),var(--dy)) scale(1.3)}}
+  .pop{animation:pop .5s}
+  @keyframes pop{0%{transform:scale(.8);opacity:0}100%{transform:scale(1);opacity:1}}
+  .copied{color:var(--good);font-weight:700;margin-inline-start:10px}
+  @media (max-width:560px){
+    h2.q{font-size:22px}
+    .opt{font-size:20px;min-height:58px;padding:10px}
+    .stop{min-width:44px}.stop .dot{width:42px;height:42px;font-size:19px}.stop .lbl{display:none}
+    .map .line{top:33px}
+    .start h1{font-size:30px}
+    .row .name{width:96px;font-size:14px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+
+<script>
+(function(){
+  const S = [
+    {name:'الأرقام', icon:'🔢', c:'var(--num)', s:'var(--num-s)', hex:'#3b82f6'},
+    {name:'الكلمات', icon:'📚', c:'var(--word)', s:'var(--word-s)', hex:'#16a34a'},
+    {name:'المنطق', icon:'🧩', c:'var(--logic)', s:'var(--logic-s)', hex:'#9333ea'},
+    {name:'الأشكال', icon:'🧭', c:'var(--shape)', s:'var(--shape-s)', hex:'#ea580c'},
+    {name:'الإبداع', icon:'🎨', c:'var(--create)', s:'var(--create-s)', hex:'#db2777'}
+  ];
+  const seq = t => `<span class="seq">${t}</span>`;
+
+  // ---------- figures ----------
+  const figQ4 = `<svg viewBox="0 0 420 230" width="380" role="img" aria-label="لغز الأشكال">
+    <rect x="4" y="4" width="412" height="222" rx="24" fill="#fff4dc" stroke="#f5b301" stroke-width="2"/>
+    <g font-size="30" font-weight="800" fill="#2b2140" text-anchor="middle" direction="ltr">
+      <rect x="66" y="26" width="48" height="48" rx="8" fill="#bcd6fb" stroke="#3b82f6" stroke-width="3"/>
+      <text x="146" y="61">+</text>
+      <rect x="178" y="26" width="48" height="48" rx="8" fill="#bcd6fb" stroke="#3b82f6" stroke-width="3"/>
+      <text x="258" y="61">=</text><text x="320" y="61">12</text>
+      <rect x="66" y="96" width="48" height="48" rx="8" fill="#bcd6fb" stroke="#3b82f6" stroke-width="3"/>
+      <text x="146" y="131">+</text>
+      <polygon points="202,94 230,144 174,144" fill="#c9f0d0" stroke="#16a34a" stroke-width="3" stroke-linejoin="round"/>
+      <text x="258" y="131">=</text><text x="320" y="131">10</text>
+      <polygon points="146,164 174,214 118,214" fill="#c9f0d0" stroke="#16a34a" stroke-width="3" stroke-linejoin="round"/>
+      <text x="210" y="201">=</text>
+      <circle cx="274" cy="190" r="24" fill="#ffe08a" stroke="#f5b301" stroke-width="3" stroke-dasharray="5 4"/>
+      <text x="274" y="201">؟</text>
+    </g></svg>`;
+
+  function arrowSvg(cx, cy, a, c){
+    return `<g transform="rotate(${a} ${cx} ${cy})"><path d="M${cx-13} ${cy}H${cx+4}" stroke="${c}" stroke-width="4.5" stroke-linecap="round"/><path d="M${cx} ${cy-9}L${cx+14} ${cy}L${cx} ${cy+9}z" fill="${c}"/></g>`;
+  }
+  const figArrows = (() => {
+    const angles = [0,90,180,270,0,90];
+    let g = '';
+    angles.forEach((a,k) => {
+      const cx = 400 - k*56;
+      g += `<rect x="${cx-24}" y="20" width="48" height="48" rx="10" fill="#fff" stroke="#ea580c" stroke-width="2.5"/>` + arrowSvg(cx, 44, a, '#3b82f6');
+    });
+    const qx = 400 - 6*56;
+    g += `<rect x="${qx-24}" y="20" width="48" height="48" rx="10" fill="#ffe08a" stroke="#f5b301" stroke-width="3" stroke-dasharray="5 4"/><text x="${qx}" y="56" text-anchor="middle" font-size="30" font-weight="800" fill="#2b2140">؟</text>`;
+    return `<svg viewBox="0 0 440 104" width="420" role="img" aria-label="نمط الأسهم">${g}<text x="400" y="96" text-anchor="middle" font-size="14" fill="#6b6280">ابدأ من هنا ⬆</text></svg>`;
+  })();
+  function arrowBtn(a){
+    return `<svg viewBox="0 0 40 40" width="40" height="40">${arrowSvg(20,20,a,'#3b82f6')}</svg>`;
+  }
+  const figCube = `<svg viewBox="0 0 220 180" width="220" role="img" aria-label="مكعب">
+    <polygon points="50,60 90,20 190,20 150,60" fill="#f9c9de" stroke="#ea580c" stroke-width="4" stroke-linejoin="round"/>
+    <polygon points="150,60 190,20 190,120 150,160" fill="#bfe6c4" stroke="#ea580c" stroke-width="4" stroke-linejoin="round"/>
+    <rect x="50" y="60" width="100" height="100" fill="#bcd6fb" stroke="#ea580c" stroke-width="4" stroke-linejoin="round"/></svg>`;
+  const figCompass = `<svg viewBox="0 0 260 230" width="250" role="img" aria-label="بوصلة">
+    <circle cx="130" cy="115" r="72" fill="#d8f3e3" stroke="#16a34a" stroke-width="4"/>
+    <path d="M130 50V180M65 115H195" stroke="#16a34a" stroke-dasharray="4 4"/>
+    <path d="M130 115V66" stroke="#3b82f6" stroke-width="6" stroke-linecap="round"/>
+    <polygon points="118,72 130,48 142,72" fill="#3b82f6"/><circle cx="130" cy="115" r="8" fill="#3b82f6"/>
+    <g font-size="18" font-weight="800" fill="#2b2140" text-anchor="middle">
+      <text x="130" y="30">شمال</text><text x="130" y="216">جنوب</text><text x="230" y="121">شرق</text><text x="30" y="121">غرب</text>
+    </g></svg>`;
+  const figGrid = `<svg viewBox="0 0 180 180" width="170" role="img" aria-label="شبكة مربعات">
+    <rect x="20" y="20" width="70" height="70" fill="#bcd6fb" stroke="#2b2140" stroke-width="2"/>
+    <rect x="90" y="20" width="70" height="70" fill="#fbd0b8" stroke="#2b2140" stroke-width="2"/>
+    <rect x="20" y="90" width="70" height="70" fill="#f9c9de" stroke="#2b2140" stroke-width="2"/>
+    <rect x="90" y="90" width="70" height="70" fill="#bfe6c4" stroke="#2b2140" stroke-width="2"/>
+    <rect x="20" y="20" width="140" height="140" fill="none" stroke="#2b2140" stroke-width="5"/></svg>`;
+
+  // ---------- questions (same as the level 1 test, same option order) ----------
+  const Q = [
+    {s:0, q:`ما العدد التالي في المتتابعة؟<br>${seq('2 , 4 , 8 , 16 , ?')}`, o:['32','18','24','20'], a:0, e:'كل عدد ضعف العدد الذي قبله: 16 × 2 = 32'},
+    {s:0, q:`ما العدد التالي؟<br>${seq('3 , 6 , 5 , 10 , 9 , 18 , ?')}`, o:['36','17','20','19'], a:1, e:'النمط: نضرب في 2 ثم نطرح 1، إذن 18 − 1 = 17'},
+    {s:0, q:`ما العدد التالي؟<br>${seq('1 , 4 , 9 , 16 , 25 , ?')}`, o:['30','35','49','36'], a:3, e:'هذه مربعات الأعداد: 6 × 6 = 36'},
+    {s:0, q:'حلّ لغز الأشكال: ما قيمة المثلث؟', fig:figQ4, o:['2','4','6','8'], a:1, e:'المربع = 6 لأن 6 + 6 = 12، إذن المثلث = 10 − 6 = 4'},
+    {s:0, q:'عمر أحمد ضعف عمر أخيه، ومجموع عمريهما 15 سنة. كم عمر أحمد؟', o:['10','5','8','12'], a:0, e:'عمر الأخ 5 وعمر أحمد 10، والمجموع 15'},
+    {s:0, q:`ما العدد التالي؟<br>${seq('1 , 1 , 2 , 3 , 5 , 8 , ?')}`, o:['11','12','13','16'], a:2, e:'كل عدد = مجموع العددين قبله: 5 + 8 = 13'},
+    {s:1, q:'قلم : كتابة &nbsp;،&nbsp; مقص : ؟', o:['ورق','قص','حديد','خياطة'], a:1, e:'الأداة ووظيفتها: القلم للكتابة والمقص للقص'},
+    {s:1, q:'ما الكلمة المختلفة عن البقية؟', o:['جزرة','تفاحة','برتقالة','موزة'], a:0, e:'الجزرة من الخضار، والبقية فواكه'},
+    {s:1, q:'طائر : عش &nbsp;،&nbsp; نحلة : ؟', o:['عسل','زهرة','حديقة','خلية'], a:3, e:'الكائن ومسكنه: الطائر يسكن العش والنحلة تسكن الخلية'},
+    {s:1, q:'ما عكس كلمة «شجاع»؟', o:['قوي','جبان','سريع','هادئ'], a:1, e:'عكس الشجاع: الجبان'},
+    {s:1, q:'ما الكلمة المختلفة عن البقية؟', o:['مثلث','مربع','دائرة','مكعب'], a:3, e:'المكعب مجسّم، والبقية أشكال مستوية'},
+    {s:1, q:'صباح : مساء &nbsp;،&nbsp; شروق : ؟', o:['غروب','شمس','ظهر','نهار'], a:0, e:'علاقة تضاد: الشروق عكسه الغروب'},
+    {s:2, q:'كل الطيور لها أجنحة، والنعامة طائر. إذن:', o:['النعامة تطير','النعامة لها أجنحة','النعامة ليست طائرًا','لا يمكن الحكم'], a:1, e:'ما دامت كل الطيور لها أجنحة فالنعامة لها أجنحة، حتى لو لم تكن تطير'},
+    {s:2, q:'سارة أطول من منى، ومنى أطول من هند. من الأقصر؟', o:['سارة','منى','هند','لا يمكن معرفة ذلك'], a:2, e:'الترتيب من الأطول: سارة ثم منى ثم هند'},
+    {s:2, q:'يقف 5 طلاب في صف واحد، وعلي يقف في المنتصف تمامًا. كم طالبًا على يمينه؟', o:['2','1','3','4'], a:0, e:'علي الثالث من خمسة، فعلى كل جانب طالبان'},
+    {s:2, q:'إذا كان اليوم الثلاثاء، فما اليوم بعد 10 أيام؟', o:['الخميس','السبت','الجمعة','الثلاثاء'], a:2, e:'بعد 7 أيام نعود إلى الثلاثاء، ثم 3 أيام أخرى: الجمعة'},
+    {s:2, q:'إذا كان: أ = 1 ، ب = 2 ، ج = 3 ، د = 4 ، فما مجموع رموز كلمة «جد»؟', o:['5','6','7','12'], a:2, e:'ج = 3 و د = 4، والمجموع 7'},
+    {s:3, q:'ما السهم التالي في النمط؟', fig:figArrows, o:[0,270,90,180], arrows:true, a:3, e:'السهم يدور ربع دورة مع عقارب الساعة في كل مرة، فيأتي السهم المتجه لليسار'},
+    {s:3, q:'كم حرفًا (ضلعًا) للمكعب؟', fig:figCube, o:['6','8','12','24'], a:2, e:'4 أحرف في الأعلى + 4 في الأسفل + 4 جانبية = 12'},
+    {s:3, q:'تنظر نحو الشمال، ثم تستدير ربع دورة إلى اليمين، ثم نصف دورة. إلى أين تنظر الآن؟', fig:figCompass, o:['الشمال','الجنوب','الشرق','الغرب'], a:3, e:'ربع دورة يمينًا: الشرق، ثم نصف دورة: الغرب'},
+    {s:3, q:'كم مربعًا تراه في الشكل بجميع الأحجام؟', fig:figGrid, o:['4','5','6','8'], a:1, e:'4 مربعات صغيرة + 1 كبير = 5'}
+  ];
+  const LET = ['أ','ب','ج','د'];
+  const TOTAL = Q.length;
+  const perStationTotal = [0,0,0,0].map((_,i) => Q.filter(q => q.s === i).length);
+
+  // ---------- art ----------
+  function cat(color, mood, w){
+    const eyes = mood === 'happy'
+      ? `<path d="M45 52q5-7 10 0M65 52q5-7 10 0" stroke="#2b2140" stroke-width="3" fill="none" stroke-linecap="round"/>`
+      : `<circle cx="50" cy="52" r="4.5" fill="#2b2140"/><circle cx="70" cy="52" r="4.5" fill="#2b2140"/><circle cx="51.5" cy="50.5" r="1.4" fill="#fff"/><circle cx="71.5" cy="50.5" r="1.4" fill="#fff"/>`;
+    const mouth = mood === 'happy'
+      ? `<path d="M52 63q8 9 16 0" stroke="#2b2140" stroke-width="2" fill="none" stroke-linecap="round"/>`
+      : mood === 'think'
+      ? `<path d="M54 66h12" stroke="#2b2140" stroke-width="2" stroke-linecap="round"/>`
+      : `<path d="M60 62q-5 6-10 2M60 62q5 6 10 2" stroke="#2b2140" stroke-width="2" fill="none" stroke-linecap="round"/>`;
+    return `<svg viewBox="0 0 130 140" width="${w||110}" aria-hidden="true">
+      <path d="M88 128q44 0 30-46" stroke="${color}" stroke-width="8" stroke-linecap="round" fill="none"/>
+      <ellipse cx="60" cy="104" rx="36" ry="32" fill="${color}" fill-opacity=".35" stroke="${color}" stroke-width="3"/>
+      <polygon points="33,44 38,12 55,28" fill="${color}" fill-opacity=".6" stroke="${color}" stroke-width="3" stroke-linejoin="round"/>
+      <polygon points="87,44 82,12 65,28" fill="${color}" fill-opacity=".6" stroke="${color}" stroke-width="3" stroke-linejoin="round"/>
+      <circle cx="60" cy="56" r="31" fill="${color}" fill-opacity=".5" stroke="${color}" stroke-width="3"/>
+      ${eyes}
+      <circle cx="42" cy="64" r="5" fill="#f472b6" fill-opacity=".5"/><circle cx="78" cy="64" r="5" fill="#f472b6" fill-opacity=".5"/>
+      <polygon points="56,58 64,58 60,63" fill="#f472b6"/>${mouth}
+      <path d="M46 61H22M46 66L24 72M74 61H98M74 66L96 72" stroke="#2b2140" stroke-width="1.2"/>
+    </svg>`;
+  }
+  function flower(x, ground, h, c){
+    let p = '';
+    for (let i = 0; i < 6; i++){
+      const a = Math.PI/3*i;
+      p += `<circle cx="${(x + 11*Math.cos(a)).toFixed(1)}" cy="${(ground - h + 11*Math.sin(a)).toFixed(1)}" r="8" fill="${c}" fill-opacity=".8"/>`;
+    }
+    return `<g><path d="M${x} ${ground}V${ground-h}" stroke="#22a046" stroke-width="3"/><ellipse cx="${x+9}" cy="${ground-h/2}" rx="9" ry="4" fill="#22a046" transform="rotate(-30 ${x+9} ${ground-h/2})"/>${p}<circle cx="${x}" cy="${ground-h}" r="6.5" fill="#f5b301"/></g>`;
+  }
+  const petal = ['#f472b6','#60a5fa','#34d399','#c084fc','#fb923c','#f87171'];
+  function scene(){
+    const fl = [[40,60,0],[80,44,2],[250,54,3],[300,40,1],[480,50,4],[530,62,0],[700,48,2],[740,60,5]]
+      .map(f => flower(f[0], 200, f[1], petal[f[2]])).join('');
+    return `<svg viewBox="0 0 780 210" width="100%" aria-hidden="true">
+      <path d="M10 200H770" stroke="#22a046" stroke-width="3" stroke-opacity=".5"/>${fl}
+      <g transform="translate(110,62)">${catInner('#60a5fa','happy')}</g>
+      <g transform="translate(580,62)">${catInner('#fb923c','normal')}</g>
+      <text x="390" y="110" text-anchor="middle" font-size="58">⭐</text>
+    </svg>`;
+  }
+  function catInner(color, mood){ return cat(color, mood, 130).replace(/<svg[^>]*>/,'').replace('</svg>',''); }
+
+  // ---------- sound (optional) ----------
+  let ac = null, soundOn = true;
+  function tone(freqs){
+    if (!soundOn) return;
+    try {
+      ac = ac || new (window.AudioContext || window.webkitAudioContext)();
+      let t = ac.currentTime;
+      freqs.forEach(f => {
+        const o = ac.createOscillator(), g = ac.createGain();
+        o.type = 'triangle'; o.frequency.value = f;
+        g.gain.setValueAtTime(.18, t); g.gain.exponentialRampToValueAtTime(.001, t + .22);
+        o.connect(g); g.connect(ac.destination); o.start(t); o.stop(t + .24); t += .12;
+      });
+    } catch(e){}
+  }
+
+  // ---------- state ----------
+  const st = {name:'', i:0, score:0, per:[0,0,0,0], answered:false, ideas:[], q23:['','','']};
+  const app = document.getElementById('app');
+  const esc = t => String(t).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+  function topbar(){
+    return `<div class="topbar">
+      <div class="brand">🌟 رحلة العباقرة الصغار</div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <div class="pill">⭐ <span id="sc">${st.score}</span></div>
+        <button class="iconbtn" id="snd" title="الصوت">${soundOn ? '🔊' : '🔇'}</button>
+      </div></div>`;
+  }
+  function map(cur){
+    return `<div class="map"><div class="line"></div>${S.map((s,k) => {
+      const done = k < cur, act = k === cur;
+      return `<div class="stop ${done?'done':''} ${act?'active':''}">
+        <div class="dot" style="${act||done ? `background:${s.s};border-color:${done?'var(--good)':s.c}` : ''}">${done ? '✅' : s.icon}</div>
+        <div class="lbl">${s.name}</div></div>`;
+    }).join('')}</div>`;
+  }
+  function bindSound(){
+    const b = document.getElementById('snd');
+    if (b) b.onclick = () => { soundOn = !soundOn; b.textContent = soundOn ? '🔊' : '🔇'; };
+  }
+
+  // ---------- screens ----------
+  function start(){
+    app.innerHTML = `<div class="card start center pop">
+      ${scene()}
+      <h1>رحلة العباقرة الصغار</h1>
+      <p>اختبار المستوى الأول للموهوبين… لكن على شكل مغامرة! اجمع النجوم في خمس محطات.</p>
+      <div class="stations-intro">${S.map(s => `<span class="chip" style="background:${s.s};color:${s.c}">${s.icon} ${s.name}</span>`).join('')}</div>
+      <div><input class="nameinput" id="nm" placeholder="اكتب اسمك يا بطل" maxlength="30" value="${esc(st.name)}"></div>
+      <button class="btn" id="go">ابدأ الرحلة 🚀</button>
+      <p class="note" style="margin-top:14px">21 سؤالًا سريعًا + محطة إبداع في النهاية</p>
+    </div>`;
+    document.getElementById('go').onclick = () => {
+      st.name = document.getElementById('nm').value.trim();
+      tone([523,659,784]); question();
+    };
+    document.getElementById('nm').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('go').click(); });
+  }
+
+  function question(){
+    const q = Q[st.i], s = S[q.s];
+    st.answered = false;
+    const inStation = Q.filter(x => x.s === q.s);
+    const pos = inStation.indexOf(q) + 1;
+    const opts = q.o.map((o,k) => `<button class="opt" data-k="${k}"><span class="let" style="background:${s.c}">${LET[k]}</span>${q.arrows ? `<span class="arrow">${arrowBtn(o)}</span>` : `<span>${o}</span>`}</button>`).join('');
+    app.innerHTML = topbar() + map(q.s) + `
+      <div class="card pop" style="border-color:${s.c}">
+        <div class="qhead">
+          <span class="badge" style="background:${s.s};color:${s.c}">${s.icon} محطة ${s.name}</span>
+          <span class="qnum">سؤال ${st.i + 1} من ${TOTAL}</span>
+        </div>
+        <div class="progress"><div style="width:${(pos-1)/inStation.length*100}%;background:${s.c}"></div></div>
+        <h2 class="q">${q.q}</h2>
+        ${q.fig ? `<div class="fig">${q.fig}</div>` : ''}
+        <div class="opts">${opts}</div>
+        <div class="feedback" id="fb"></div>
+      </div>`;
+    bindSound();
+    app.querySelectorAll('.opt').forEach(b => b.onclick = () => answer(+b.dataset.k, b));
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+
+  function burst(el){
+    const r = el.getBoundingClientRect();
+    for (let n = 0; n < 8; n++){
+      const d = document.createElement('div');
+      d.className = 'burst'; d.textContent = n % 2 ? '⭐' : '✨';
+      d.style.left = (r.left + r.width/2) + 'px'; d.style.top = (r.top + r.height/2) + 'px';
+      const a = Math.PI*2*n/8;
+      d.style.setProperty('--dx', Math.cos(a)*90 + 'px'); d.style.setProperty('--dy', Math.sin(a)*90 + 'px');
+      document.body.appendChild(d); setTimeout(() => d.remove(), 1000);
+    }
+  }
+
+  function answer(k, btn){
+    if (st.answered) return;
+    st.answered = true;
+    const q = Q[st.i], ok = k === q.a;
+    const btns = app.querySelectorAll('.opt');
+    btns.forEach(b => b.disabled = true);
+    btns[q.a].classList.add('right');
+    if (ok){ st.score++; st.per[q.s]++; btn.classList.add('right'); burst(btn); tone([660,880]); document.getElementById('sc').textContent = st.score; }
+    else { btn.classList.add('wrong'); tone([300,220]); }
+    const praise = ['أحسنت!','رائع!','عبقري!','ممتاز!','برافو!'];
+    const last = st.i === TOTAL - 1, stationEnd = last || Q[st.i+1].s !== q.s;
+    const fb = document.getElementById('fb');
+    fb.className = 'feedback show pop ' + (ok ? 'ok' : 'no');
+    fb.innerHTML = `<div class="mascot">${cat(ok ? '#60a5fa' : '#fb923c', ok ? 'happy' : 'think', 80)}</div>
+      <div class="msg"><b>${ok ? praise[st.i % praise.length] + ' ⭐' : 'لا بأس، نتعلّم معًا 💡'}</b><span>${q.e}</span></div>
+      <button class="btn green" id="nx">${stationEnd ? 'أنهِ المحطة' : 'التالي'} ⬅</button>`;
+    document.getElementById('nx').onclick = () => {
+      if (stationEnd) stationDone(q.s); else { st.i++; question(); }
+    };
+  }
+
+  function stationDone(si){
+    const s = S[si], got = st.per[si], tot = perStationTotal[si];
+    const stars = '⭐'.repeat(got) + '☆'.repeat(tot - got);
+    const msg = got === tot ? 'علامة كاملة! أنت نجم المحطة 🏆' : got >= tot - 1 ? 'أداء رائع جدًا!' : got >= tot/2 ? 'أحسنت، واصل التقدم!' : 'بداية جيدة، المحطة القادمة لك!';
+    tone([523,659,784,1047]);
+    app.innerHTML = topbar() + map(si + 1) + `
+      <div class="card center pop" style="border-color:${s.c}">
+        ${cat('#60a5fa','happy',120)}
+        <h2 style="font-size:30px;margin:4px 0">أنهيت محطة ${s.name} ${s.icon}</h2>
+        <div class="stars-big">${stars}</div>
+        <p style="font-size:20px;margin:6px 0 16px">${got} من ${tot} — ${msg}</p>
+        <button class="btn" id="cont">${si < 3 ? 'إلى محطة ' + S[si+1].name + ' 🚀' : 'إلى محطة الإبداع 🎨'}</button>
+      </div>`;
+    bindSound();
+    document.getElementById('cont').onclick = () => {
+      if (si < 3){ st.i++; question(); } else creative();
+    };
+  }
+
+  function garden(){
+    const n = st.ideas.length;
+    let g = '';
+    for (let k = 0; k < Math.max(n, 0); k++){
+      const x = 40 + (k % 12) * 60 + (Math.floor(k/12) * 30);
+      g += flower(x, 110, 40 + (k*17) % 34, petal[k % petal.length]);
+    }
+    return `<svg viewBox="0 0 780 120" width="100%" aria-hidden="true"><path d="M10 110H770" stroke="#22a046" stroke-width="3" stroke-opacity=".5"/>${g}
+      ${n === 0 ? '<text x="390" y="70" text-anchor="middle" font-size="18" fill="#6b6280">كل فكرة تزرع وردة في حديقتك 🌱</text>' : ''}</svg>`;
+  }
+
+  function creative(){
+    const s = S[4];
+    app.innerHTML = topbar() + map(4) + `
+      <div class="card pop" style="border-color:${s.c}">
+        <span class="badge" style="background:${s.s};color:${s.c}">🎨 محطة الإبداع</span>
+        <h2 class="q">22) اكتب أكبر عدد ممكن من الاستخدامات غير المعتادة لعلبة كرتون فارغة 📦</h2>
+        <p class="note">اكتب فكرة ثم اضغط «أضف». كل فكرة تزرع وردة!</p>
+        <div class="ideas"><input id="idea" placeholder="مثلًا: بيت لقطة صغيرة 🐱" maxlength="80"><button class="btn" id="add" style="padding:8px 20px;font-size:19px">أضف 🌸</button></div>
+        <div class="idea-list" id="list"></div>
+        <div class="garden" id="gd">${garden()}</div>
+        <h2 class="q" style="margin-top:22px">23) ماذا يحدث لو لم يكن هناك ليل أبدًا؟ اكتب ثلاث نتائج مختلفة 🌞</h2>
+        <div class="q23">
+          <input id="r0" placeholder="النتيجة الأولى" value="${esc(st.q23[0])}">
+          <input id="r1" placeholder="النتيجة الثانية" value="${esc(st.q23[1])}">
+          <input id="r2" placeholder="النتيجة الثالثة" value="${esc(st.q23[2])}">
+        </div>
+        <div class="center" style="margin-top:16px"><button class="btn green" id="fin">أنهيت الرحلة 🏁</button></div>
+      </div>`;
+    bindSound();
+    const inp = document.getElementById('idea');
+    const drawList = () => {
+      document.getElementById('list').innerHTML = st.ideas.map((t,k) => `<span class="tag">🌸 ${esc(t)} <button data-k="${k}" title="حذف">✕</button></span>`).join('');
+      document.getElementById('gd').innerHTML = garden();
+      document.querySelectorAll('#list button').forEach(b => b.onclick = () => { st.ideas.splice(+b.dataset.k, 1); drawList(); });
+    };
+    const add = () => {
+      const t = inp.value.trim(); if (!t) return;
+      st.ideas.push(t); inp.value = ''; tone([784,988]); drawList(); inp.focus();
+    };
+    document.getElementById('add').onclick = add;
+    inp.addEventListener('keydown', e => { if (e.key === 'Enter'){ e.preventDefault(); add(); } });
+    drawList();
+    document.getElementById('fin').onclick = () => {
+      st.q23 = [0,1,2].map(k => document.getElementById('r'+k).value.trim());
+      result();
+    };
+  }
+
+  function result(){
+    const sc = st.score;
+    const lvl = sc >= 19 ? ['عبقري متميز جدًا 🏆','#16a34a'] : sc >= 15 ? ['متميز 🌟','#3b82f6'] : sc >= 11 ? ['جيد جدًا، واصل التدريب 💪','#9333ea'] : ['بداية جميلة! تدرّب أكثر وستتفوق 🌱','#ea580c'];
+    const starsN = Math.round(sc / TOTAL * 5);
+    const rows = S.slice(0,4).map((s,k) => {
+      const v = st.per[k], t = perStationTotal[k];
+      return `<div class="row"><span class="name">${s.icon} ${s.name}</span><div class="bar"><div style="width:${v/t*100}%;background:${s.c}"></div></div><span class="val">${v}/${t}</span></div>`;
+    }).join('');
+    const summary = [
+      'نتيجة لعبة: رحلة العباقرة الصغار – المستوى الأول',
+      'الاسم: ' + (st.name || '—'),
+      'الدرجة في الأسئلة الموضوعية: ' + sc + ' من ' + TOTAL,
+      ...S.slice(0,4).map((s,k) => '• ' + s.name + ': ' + st.per[k] + ' من ' + perStationTotal[k]),
+      '',
+      'سؤال 22 (استخدامات علبة الكرتون) – عدد الأفكار: ' + st.ideas.length,
+      ...st.ideas.map((t,k) => (k+1) + ') ' + t),
+      '',
+      'سؤال 23 (لو لم يكن هناك ليل):',
+      ...st.q23.map((t,k) => (k+1) + ') ' + (t || '—')),
+      '',
+      'أسئلة الإبداع (9 درجات) يصححها المعلم حسب معايير الطلاقة والمرونة والأصالة.'
+    ].join('\n');
+    tone([523,659,784,1047,1319]);
+    app.innerHTML = topbar() + map(5) + `
+      <div class="card center pop" style="border-color:${lvl[1]}">
+        ${scene()}
+        <h2 style="font-size:32px;margin:0">${st.name ? 'أحسنت يا ' + esc(st.name) + '!' : 'أحسنت يا بطل!'}</h2>
+        <div class="stars-big">${'⭐'.repeat(starsN)}${'☆'.repeat(5 - starsN)}</div>
+        <p style="font-size:24px;margin:4px 0"><b>${sc}</b> من ${TOTAL} نجمة</p>
+        <p style="font-size:22px;font-weight:800;color:${lvl[1]};margin:0 0 6px">${lvl[0]}</p>
+        <div class="rows" style="text-align:right">${rows}
+          <div class="row"><span class="name">🎨 الإبداع</span><div class="bar"><div style="width:${Math.min(st.ideas.length,10)*10}%;background:var(--create)"></div></div><span class="val">🌸${st.ideas.length}</span></div>
+        </div>
+        <p class="note">أفكارك في محطة الإبداع يقرؤها المعلم ويمنحك درجتها 🌸</p>
+        <div style="text-align:right;margin-top:14px">
+          <b>ملخص للمعلم:</b>
+          <textarea id="sum" rows="8" readonly style="margin-top:6px">${esc(summary)}</textarea>
+        </div>
+        <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:12px">
+          <button class="btn ghost" id="cp">📋 نسخ الملخص</button>
+          <button class="btn" id="again">🔁 العب مرة أخرى</button>
+        </div>
+        <span id="cpd"></span>
+      </div>`;
+    bindSound();
+    document.getElementById('cp').onclick = async () => {
+      const ta = document.getElementById('sum');
+      try { await navigator.clipboard.writeText(ta.value); document.getElementById('cpd').innerHTML = '<span class="copied">تم النسخ ✅</span>'; }
+      catch(e){ ta.focus(); ta.select(); document.getElementById('cpd').innerHTML = '<span class="note">حدّد النص وانسخه يدويًا</span>'; }
+    };
+    document.getElementById('again').onclick = () => {
+      Object.assign(st, {i:0, score:0, per:[0,0,0,0], answered:false, ideas:[], q23:['','','']});
+      start();
+    };
+  }
+
+  start();
+})();
+</script>
+</body>
+</html>

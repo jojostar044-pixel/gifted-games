@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>رحلة العباقرة – لعبة المستوى الثاني</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#fff8ef; --ink:#2b2140; --quiet:#6b6280; --card:#ffffff;
+    --num:#3b82f6; --num-s:#e7f1fb;
+    --word:#16a34a; --word-s:#e5f4e4;
+    --logic:#9333ea; --logic-s:#efedff;
+    --shape:#ea580c; --shape-s:#f9ece7;
+    --create:#db2777; --create-s:#fcebf3;
+    --good:#16a34a; --bad:#dc2626; --gold:#f5b301;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:'Baloo Bhaijaan 2', system-ui, sans-serif;
+    background:radial-gradient(circle at 15% 10%, #ffe7f2 0, transparent 35%),
+               radial-gradient(circle at 85% 20%, #e3f0ff 0, transparent 35%),
+               radial-gradient(circle at 50% 100%, #e8f8e6 0, transparent 45%), var(--bg);
+    color:var(--ink); min-height:100vh;
+  }
+  .wrap{max-width:820px;margin:0 auto;padding:18px 16px 40px}
+  .topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+  .brand{font-weight:800;font-size:20px}
+  .pill{background:#fff;border-radius:999px;padding:6px 14px;font-weight:700;box-shadow:0 2px 0 rgba(0,0,0,.06);display:flex;align-items:center;gap:6px}
+  .iconbtn{border:none;background:#fff;border-radius:999px;width:40px;height:40px;font-size:18px;cursor:pointer;box-shadow:0 2px 0 rgba(0,0,0,.06)}
+  .map{display:flex;align-items:center;justify-content:space-between;background:#fff;border-radius:22px;padding:12px 16px;margin-bottom:16px;position:relative;box-shadow:0 3px 0 rgba(0,0,0,.05)}
+  .map .line{position:absolute;right:46px;left:46px;top:38px;height:4px;background:#eee;border-radius:4px;z-index:0}
+  .stop{display:flex;flex-direction:column;align-items:center;gap:2px;z-index:1;min-width:58px}
+  .stop .dot{width:52px;height:52px;border-radius:50%;display:grid;place-items:center;font-size:24px;background:#f3f1f7;border:3px solid #e4e0ec;transition:.3s}
+  .stop .lbl{font-size:13px;font-weight:700;color:var(--quiet)}
+  .stop.active .dot{transform:scale(1.12);box-shadow:0 0 0 6px rgba(245,179,1,.25)}
+  .stop.done .dot{border-color:var(--good)}
+  .card{background:var(--card);border-radius:28px;padding:22px 22px 24px;box-shadow:0 6px 0 rgba(0,0,0,.06);border:3px solid transparent;position:relative;overflow:hidden}
+  .badge{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:4px 14px;font-weight:800;font-size:15px}
+  .qhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:8px;flex-wrap:wrap}
+  .qnum{color:var(--quiet);font-weight:700}
+  .progress{height:10px;background:#f1eef6;border-radius:10px;overflow:hidden;margin:6px 0 14px}
+  .progress > div{height:100%;border-radius:10px;transition:width .4s}
+  h2.q{font-size:26px;line-height:1.5;margin:6px 0 10px}
+  .seq{direction:ltr;unicode-bidi:isolate;display:inline-block;background:#f7f5fb;border-radius:14px;padding:2px 14px;font-size:26px;letter-spacing:1px}
+  .fig{display:flex;justify-content:center;margin:6px 0 12px}
+  .fig svg{max-width:100%;height:auto}
+  .opts{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px}
+  .opt{font-family:inherit;font-size:24px;font-weight:700;border:3px solid #e6e1ef;background:#fff;border-radius:20px;padding:14px 12px;cursor:pointer;display:flex;align-items:center;gap:10px;transition:transform .12s, background .2s, border-color .2s;color:var(--ink);min-height:68px}
+  .opt:hover:not(:disabled){transform:translateY(-3px)}
+  .opt .let{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;font-size:18px;color:#fff;flex:0 0 auto}
+  .opt.right{background:#e5f7e8;border-color:var(--good)}
+  .opt.wrong{background:#fde8e8;border-color:var(--bad);animation:shake .4s}
+  .opt:disabled{cursor:default}
+  .opt .arrow{font-size:30px;direction:ltr}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+  .feedback{display:none;margin-top:16px;border-radius:20px;padding:12px 16px;align-items:center;gap:12px}
+  .feedback.show{display:flex}
+  .feedback.ok{background:#e5f7e8}
+  .feedback.no{background:#fff1e6}
+  .feedback .msg{flex:1}
+  .feedback .msg b{font-size:22px;display:block}
+  .feedback .msg span{color:var(--quiet);font-size:16px}
+  .feedback .mascot{width:80px;flex:0 0 auto}
+  .btn{font-family:inherit;font-size:22px;font-weight:800;border:none;border-radius:999px;padding:12px 30px;cursor:pointer;color:#fff;background:linear-gradient(180deg,#ff8a3d,#f25c05);box-shadow:0 5px 0 #b84300;transition:transform .1s}
+  .btn:active{transform:translateY(3px);box-shadow:0 2px 0 #b84300}
+  .btn.green{background:linear-gradient(180deg,#34d058,#16a34a);box-shadow:0 5px 0 #0d6b2f}
+  .btn.ghost{background:#fff;color:var(--ink);box-shadow:0 4px 0 #ddd}
+  .center{text-align:center}
+  .start h1{font-size:40px;margin:6px 0 0}
+  .start p{font-size:19px;color:var(--quiet);margin:4px 0 12px}
+  .nameinput{font-family:inherit;font-size:22px;border:3px solid #e6e1ef;border-radius:18px;padding:10px 16px;width:min(360px,100%);text-align:center;margin:8px 0 16px}
+  .stations-intro{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin:8px 0 18px}
+  .stations-intro .chip{border-radius:999px;padding:6px 14px;font-weight:700;font-size:16px}
+  .stars-big{font-size:42px;letter-spacing:4px}
+  .rows{display:grid;gap:10px;margin:14px 0}
+  .row{display:flex;align-items:center;gap:10px;font-weight:700}
+  .row .name{width:130px;flex:0 0 auto}
+  .row .bar{flex:1;height:18px;background:#f1eef6;border-radius:12px;overflow:hidden}
+  .row .bar > div{height:100%;border-radius:12px}
+  .row .val{width:52px;text-align:left;direction:ltr}
+  .ideas{display:flex;gap:8px;margin:8px 0}
+  .ideas input{flex:1;font-family:inherit;font-size:19px;border:3px solid #f3c9dc;border-radius:16px;padding:8px 14px}
+  .idea-list{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 4px}
+  .idea-list .tag{background:var(--create-s);border-radius:999px;padding:4px 12px;font-weight:600;display:flex;gap:6px;align-items:center}
+  .idea-list .tag button{border:none;background:none;cursor:pointer;color:var(--quiet);font-size:16px}
+  textarea, .q23 input{font-family:inherit;font-size:18px;border:3px solid #f3c9dc;border-radius:16px;padding:8px 14px;width:100%}
+  .q23{display:grid;gap:8px;margin:8px 0}
+  .garden{background:#f2fbf0;border-radius:20px;margin-top:10px}
+  .note{color:var(--quiet);font-size:15px}
+  .burst{position:fixed;pointer-events:none;font-size:26px;animation:fly 1s ease-out forwards;z-index:50}
+  @keyframes fly{from{opacity:1;transform:translate(0,0) scale(.6)}to{opacity:0;transform:translate(var(--dx),var(--dy)) scale(1.3)}}
+  .pop{animation:pop .5s}
+  @keyframes pop{0%{transform:scale(.8);opacity:0}100%{transform:scale(1);opacity:1}}
+  .copied{color:var(--good);font-weight:700;margin-inline-start:10px}
+  @media (max-width:560px){
+    h2.q{font-size:22px}
+    .opt{font-size:20px;min-height:58px;padding:10px}
+    .stop{min-width:44px}.stop .dot{width:42px;height:42px;font-size:19px}.stop .lbl{display:none}
+    .map .line{top:33px}
+    .start h1{font-size:30px}
+    .row .name{width:96px;font-size:14px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+
+<script>
+(function(){
+  const S = [
+    {name:'الأرقام', icon:'🔢', c:'var(--num)', s:'var(--num-s)', hex:'#3b82f6'},
+    {name:'الكلمات', icon:'📚', c:'var(--word)', s:'var(--word-s)', hex:'#16a34a'},
+    {name:'المنطق', icon:'🧩', c:'var(--logic)', s:'var(--logic-s)', hex:'#9333ea'},
+    {name:'الأشكال', icon:'🧭', c:'var(--shape)', s:'var(--shape-s)', hex:'#ea580c'},
+    {name:'الإبداع', icon:'🎨', c:'var(--create)', s:'var(--create-s)', hex:'#db2777'}
+  ];
+  const seq = t => `<span class="seq">${t}</span>`;
+
+  // ---------- figures ----------
+  const figQ4 = `<svg viewBox="0 0 400 230" width="380" role="img" aria-label="لغز الأشكال">
+    <rect x="4" y="4" width="392" height="222" rx="24" fill="#fff4dc" stroke="#f5b301" stroke-width="2"/>
+    <g font-size="30" font-weight="800" fill="#2b2140" text-anchor="middle">
+      <circle cx="50" cy="50" r="22" fill="#e3c9fb" stroke="#9333ea" stroke-width="3"/>
+      <text x="95" y="61">+</text>
+      <circle cx="140" cy="50" r="22" fill="#e3c9fb" stroke="#9333ea" stroke-width="3"/>
+      <text x="185" y="61">+</text>
+      <polygon points="230,26 256,72 204,72" fill="#c9f0d0" stroke="#16a34a" stroke-width="3" stroke-linejoin="round"/>
+      <text x="282" y="61">=</text><text x="338" y="61">17</text>
+      <circle cx="140" cy="118" r="22" fill="#e3c9fb" stroke="#9333ea" stroke-width="3"/>
+      <text x="185" y="129">+</text>
+      <polygon points="230,94 256,140 204,140" fill="#c9f0d0" stroke="#16a34a" stroke-width="3" stroke-linejoin="round"/>
+      <text x="282" y="129">=</text><text x="338" y="129">11</text>
+      <circle cx="140" cy="186" r="22" fill="#e3c9fb" stroke="#9333ea" stroke-width="3"/>
+      <text x="185" y="197">×</text>
+      <polygon points="230,162 256,208 204,208" fill="#c9f0d0" stroke="#16a34a" stroke-width="3" stroke-linejoin="round"/>
+      <text x="282" y="197">=</text>
+      <circle cx="338" cy="186" r="22" fill="#ffe08a" stroke="#f5b301" stroke-width="3" stroke-dasharray="5 4"/>
+      <text x="338" y="197">؟</text>
+    </g></svg>`;
+  const td = 'style="border:2px solid #3b82f6;padding:8px 20px;font-size:24px;font-weight:800;text-align:center"';
+  const th = 'style="border:2px solid #3b82f6;padding:6px 14px;font-size:17px;background:#e7f1fb"';
+  const figTable = `<table style="border-collapse:collapse;border-radius:12px;overflow:hidden;background:#fff">
+    <tr><th ${th}>العدد الأول</th><th ${th}>العدد الثاني</th><th ${th}>الناتج</th></tr>
+    <tr><td ${td}>2</td><td ${td}>3</td><td ${td}>6</td></tr>
+    <tr><td ${td}>4</td><td ${td}>5</td><td ${td}>20</td></tr>
+    <tr><td ${td}>3</td><td ${td}>7</td><td ${td.replace('text-align:center','text-align:center;background:#ffe08a')}>؟</td></tr></table>`;
+
+  function arrowSvg(cx, cy, a, c){
+    return `<g transform="rotate(${a} ${cx} ${cy})"><path d="M${cx-13} ${cy}H${cx+4}" stroke="${c}" stroke-width="4.5" stroke-linecap="round"/><path d="M${cx} ${cy-9}L${cx+14} ${cy}L${cx} ${cy+9}z" fill="${c}"/></g>`;
+  }
+  function arrowBtn(a){
+    return `<svg viewBox="0 0 40 40" width="40" height="40">${arrowSvg(20,20,a,'#3b82f6')}</svg>`;
+  }
+  const figRot = `<svg viewBox="0 0 300 120" width="300" role="img" aria-label="سهم يدور">
+    <rect x="20" y="20" width="80" height="80" rx="14" fill="#fff" stroke="#ea580c" stroke-width="3"/>
+    ${arrowSvg(60,60,270,'#3b82f6')}
+    <path d="M130 40q40-30 80 0" stroke="#ea580c" stroke-width="3" fill="none"/>
+    <polygon points="206,30 218,44 202,46" fill="#ea580c"/>
+    <text x="170" y="80" text-anchor="middle" font-size="22" font-weight="800" fill="#2b2140">× 3</text>
+    <rect x="220" y="20" width="60" height="80" rx="14" fill="#ffe08a" stroke="#f5b301" stroke-width="3" stroke-dasharray="5 4"/>
+    <text x="250" y="70" text-anchor="middle" font-size="30" font-weight="800" fill="#2b2140">؟</text></svg>`;
+  const figTri = `<svg viewBox="0 0 240 180" width="240" role="img" aria-label="مثلث مقسوم">
+    <polygon points="120,14 220,164 20,164" fill="#d6e6fd" stroke="#3b82f6" stroke-width="4" stroke-linejoin="round"/>
+    <path d="M120 14L87 164M120 14L153 164" stroke="#3b82f6" stroke-width="4"/></svg>`;
+  const face = (x, y, n, hl) => `<rect x="${x}" y="${y}" width="46" height="46" rx="6" fill="${hl ? '#ffd27a' : '#fde1d2'}" stroke="#ea580c" stroke-width="3"/><text x="${x+23}" y="${y+32}" text-anchor="middle" font-size="22" font-weight="800" fill="#2b2140">${n}</text>`;
+  const figNet = `<svg viewBox="0 0 170 210" width="170" role="img" aria-label="شبكة مكعب">
+    ${face(62,4,1)}${face(16,50,2)}${face(62,50,3,true)}${face(108,50,4)}${face(62,96,5)}${face(62,142,6)}</svg>`;
+  const dots = (cx, k) => { let s = ''; for (let r = 0; r < k; r++) for (let j = 0; j <= r; j++) s += `<circle cx="${cx + (j - r/2)*16}" cy="${120 - (k-1-r)*16}" r="6" fill="#16a34a"/>`; return s; };
+  const figDots = `<svg viewBox="0 0 440 160" width="420" role="img" aria-label="نمط النقاط">
+    ${dots(405,1)}${dots(350,2)}${dots(280,3)}${dots(195,4)}
+    <circle cx="90" cy="104" r="24" fill="#ffe08a" stroke="#f5b301" stroke-width="3" stroke-dasharray="5 4"/>
+    <text x="90" y="115" text-anchor="middle" font-size="28" font-weight="800" fill="#2b2140">؟</text>
+    <g font-size="15" fill="#6b6280" text-anchor="middle"><text x="405" y="150">الأول</text><text x="350" y="150">الثاني</text><text x="280" y="150">الثالث</text><text x="195" y="150">الرابع</text><text x="90" y="150">الخامس</text></g></svg>`;
+  const figFold = `<svg viewBox="0 0 400 150" width="380" role="img" aria-label="طي الورقة">
+    <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#9b93ad"/></marker></defs>
+    <rect x="290" y="20" width="90" height="90" fill="#fbd5e6" stroke="#db2777" stroke-width="3"/>
+    <path d="M335 20V110M290 65H380" stroke="#db2777" stroke-dasharray="5 4" stroke-width="2"/>
+    <path d="M280 65H250" stroke="#9b93ad" stroke-width="3" marker-end="url(#ah)"/>
+    <rect x="190" y="20" width="45" height="90" fill="#f7b8d3" stroke="#db2777" stroke-width="3"/>
+    <path d="M180 65H150" stroke="#9b93ad" stroke-width="3" marker-end="url(#ah)"/>
+    <rect x="90" y="42" width="45" height="45" fill="#f292bd" stroke="#db2777" stroke-width="3"/>
+    <circle cx="112" cy="65" r="8" fill="#2b2140"/>
+    <g font-size="15" fill="#6b6280" text-anchor="middle"><text x="335" y="138">الورقة</text><text x="212" y="138">طيّة أولى</text><text x="112" y="138">طيّة ثانية وثقب</text></g></svg>`;
+
+  // ---------- questions (same as the level 2 test, same option order) ----------
+  const Q = [
+    {s:0, q:`ما العدد التالي؟<br>${seq('2 , 5 , 11 , 23 , 47 , ?')}`, o:['94','95','71','96'], a:1, e:'كل عدد = السابق × 2 + 1، إذن 47 × 2 + 1 = 95'},
+    {s:0, q:`ما العدد التالي؟<br>${seq('1 , 2 , 6 , 24 , 120 , ?')}`, o:['720','240','600','144'], a:0, e:'نضرب في 2 ثم 3 ثم 4 ثم 5 ثم 6: 120 × 6 = 720'},
+    {s:0, q:`ما العدد التالي؟<br>${seq('3 , 4 , 7 , 11 , 18 , 29 , ?')}`, o:['40','45','47','58'], a:2, e:'كل عدد = مجموع العددين قبله: 18 + 29 = 47'},
+    {s:0, q:'حلّ لغز الأشكال: ما ناتج الدائرة × المثلث؟', fig:figQ4, o:['11','25','36','30'], a:3, e:'بطرح السطرين: الدائرة = 17 − 11 = 6، والمثلث = 11 − 6 = 5، والناتج 6 × 5 = 30'},
+    {s:0, q:'النسبة بين عدد الأولاد والبنات في نادٍ 3 : 4، وعدد المشتركين 28. كم عدد البنات؟', o:['12','16','14','18'], a:1, e:'28 ÷ 7 = 4، والبنات 4 × 4 = 16'},
+    {s:0, q:'فكّرت في عدد، ثم أضفت إليه 7، ثم ضربت الناتج في 3 فكان الجواب 45. ما العدد؟', o:['8','12','6','5'], a:0, e:'نعكس الخطوات: 45 ÷ 3 = 15، ثم 15 − 7 = 8'},
+    {s:0, q:'اكتشف القاعدة في الجدول، ثم أوجد العدد الناقص:', fig:figTable, o:['10','24','21','17'], a:2, e:'الناتج = حاصل ضرب العددين: 3 × 7 = 21'},
+    {s:1, q:'كتاب : مكتبة &nbsp;،&nbsp; لوحة فنية : ؟', o:['رسّام','ألوان','إطار','متحف'], a:3, e:'الشيء والمكان الذي يُحفظ ويُعرض فيه'},
+    {s:1, q:'ما الكلمة المختلفة عن البقية؟', o:['عطارد','القمر','المريخ','زحل'], a:1, e:'القمر تابع للأرض، والبقية كواكب'},
+    {s:1, q:'ما مرادف كلمة «جَلِيّ»؟', o:['واضح','خفيّ','كبير','سريع'], a:0, e:'الجليّ هو الواضح البيّن'},
+    {s:1, q:'بذرة : شجرة &nbsp;،&nbsp; يرقة : ؟', o:['ورقة','عشّ','فراشة','دودة'], a:2, e:'المرحلة الأولى وما تصير إليه'},
+    {s:1, q:'الحرارة : ميزان الحرارة &nbsp;،&nbsp; الضغط الجوي : ؟', o:['المسطرة','البوصلة','الميزان','البارومتر'], a:3, e:'الكمية وأداة قياسها'},
+    {s:1, q:'ما معنى العبارة: «ليس كل ما يلمع ذهبًا»؟', o:['الذهب أغلى المعادن','المظاهر قد تخدع','كل شيء لامع ثمين','الذهب نادر'], a:1, e:'المعنى المجازي: لا تحكم على الأشياء من مظهرها'},
+    {s:2, q:'بعض الطلاب رياضيون، وكل الرياضيين نشيطون. أي العبارات صحيحة حتمًا؟', o:['كل الطلاب نشيطون','كل النشيطين رياضيون','لا يوجد طالب نشيط','بعض الطلاب نشيطون'], a:3, e:'الطلاب الرياضيون نشيطون حتمًا، فبعض الطلاب نشيطون'},
+    {s:2, q:'خالد أكبر من سعد بسنتين، وسعد أصغر من فهد بثلاث سنوات. إذا كان عمر فهد 14 سنة، فكم عمر خالد؟', o:['13','11','15','12'], a:0, e:'سعد 14 − 3 = 11، وخالد 11 + 2 = 13'},
+    {s:2, q:'في سباق بين أربعة: كان سامي الأول، ووصل مازن قبل ياسر، ووصل عمر بعد ياسر. من وصل أخيرًا؟', o:['مازن','ياسر','عمر','سامي'], a:2, e:'الترتيب: سامي، مازن، ياسر، عمر'},
+    {s:2, q:'في لغة سرية يُستبدل كل حرف بالحرف الذي يليه في الترتيب الهجائي، فتصبح «قلم»: «كمن». كيف تُكتب «كتب»؟', o:['كتب','لثت','لتب','يبا'], a:1, e:'ك تصبح ل، وت تصبح ث، وب تصبح ت'},
+    {s:2, q:'إذا كان أول أيام الشهر يوم الأحد، فما يوم الخامس والعشرين منه؟', o:['الثلاثاء','الخميس','الأحد','الأربعاء'], a:3, e:'الأيام 1 و8 و15 و22 أحد، ثم 25 بعدها بثلاثة أيام: الأربعاء'},
+    {s:2, q:'صندوق فيه بطاقات كل أرقامها زوجية. سحبت منه بطاقة دون أن تنظر. ما احتمال أن يكون رقمها فرديًا؟', o:['صفر','نصف','ربع','واحد صحيح'], a:0, e:'لا توجد أي بطاقة فردية، فهو حدث مستحيل احتماله صفر'},
+    {s:3, q:'كم مثلثًا ترى في الشكل (بجميع الأحجام)؟', fig:figTri, o:['3','4','6','5'], a:2, e:'3 مثلثات صغيرة + 2 متوسطان + 1 كبير = 6'},
+    {s:3, q:'إذا طوينا الشبكة لنصنع مكعبًا، فما الوجه المقابل للوجه 3؟', fig:figNet, o:['1','2','5','6'], a:3, e:'عند الطيّ: 3 يقابل 6، و1 يقابل 5، و2 يقابل 4'},
+    {s:3, q:'سهم يشير إلى الأعلى، أدرناه ربع دورة مع عقارب الساعة ثلاث مرات. إلى أين يشير الآن؟', fig:figRot, o:[180,0,90,270], arrows:true, a:0, e:'الأعلى ثم اليمين ثم الأسفل ثم اليسار'},
+    {s:3, q:'مكعب كبير مؤلف من 27 مكعبًا صغيرًا (3 × 3 × 3)، طُليت وجوهه الخارجية بالأحمر. كم مكعبًا صغيرًا لا يحمل أي لون؟', o:['0','1','8','6'], a:1, e:'المكعب المركزي فقط لا يلمس السطح'},
+    {s:3, q:'كم نقطة في الشكل الخامس من النمط؟', fig:figDots, o:['13','14','15','16'], a:2, e:'النقاط تزيد 2 ثم 3 ثم 4 ثم 5: 10 + 5 = 15'},
+    {s:3, q:'طوينا ورقة مربعة مرتين، ثم ثقبناها ثقبًا واحدًا. كم ثقبًا نرى عند فتحها؟', fig:figFold, o:['2','4','3','8'], a:1, e:'كل طيّة تضاعف عدد الطبقات: 2 × 2 = 4 ثقوب'}
+  ];
+  const LET = ['أ','ب','ج','د'];
+  const TOTAL = Q.length;
+  const perStationTotal = [0,0,0,0].map((_,i) => Q.filter(q => q.s === i).length);
+
+  // ---------- art ----------
+  function cat(color, mood, w){
+    const eyes = mood === 'happy'
+      ? `<path d="M45 52q5-7 10 0M65 52q5-7 10 0" stroke="#2b2140" stroke-width="3" fill="none" stroke-linecap="round"/>`
+      : `<circle cx="50" cy="52" r="4.5" fill="#2b2140"/><circle cx="70" cy="52" r="4.5" fill="#2b2140"/><circle cx="51.5" cy="50.5" r="1.4" fill="#fff"/><circle cx="71.5" cy="50.5" r="1.4" fill="#fff"/>`;
+    const mouth = mood === 'happy'
+      ? `<path d="M52 63q8 9 16 0" stroke="#2b2140" stroke-width="2" fill="none" stroke-linecap="round"/>`
+      : mood === 'think'
+      ? `<path d="M54 66h12" stroke="#2b2140" stroke-width="2" stroke-linecap="round"/>`
+      : `<path d="M60 62q-5 6-10 2M60 62q5 6 10 2" stroke="#2b2140" stroke-width="2" fill="none" stroke-linecap="round"/>`;
+    return `<svg viewBox="0 0 130 140" width="${w||110}" aria-hidden="true">
+      <path d="M88 128q44 0 30-46" stroke="${color}" stroke-width="8" stroke-linecap="round" fill="none"/>
+      <ellipse cx="60" cy="104" rx="36" ry="32" fill="${color}" fill-opacity=".35" stroke="${color}" stroke-width="3"/>
+      <polygon points="33,44 38,12 55,28" fill="${color}" fill-opacity=".6" stroke="${color}" stroke-width="3" stroke-linejoin="round"/>
+      <polygon points="87,44 82,12 65,28" fill="${color}" fill-opacity=".6" stroke="${color}" stroke-width="3" stroke-linejoin="round"/>
+      <circle cx="60" cy="56" r="31" fill="${color}" fill-opacity=".5" stroke="${color}" stroke-width="3"/>
+      ${eyes}
+      <circle cx="42" cy="64" r="5" fill="#f472b6" fill-opacity=".5"/><circle cx="78" cy="64" r="5" fill="#f472b6" fill-opacity=".5"/>
+      <polygon points="56,58 64,58 60,63" fill="#f472b6"/>${mouth}
+      <path d="M46 61H22M46 66L24 72M74 61H98M74 66L96 72" stroke="#2b2140" stroke-width="1.2"/>
+    </svg>`;
+  }
+  function flower(x, ground, h, c){
+    let p = '';
+    for (let i = 0; i < 6; i++){
+      const a = Math.PI/3*i;
+      p += `<circle cx="${(x + 11*Math.cos(a)).toFixed(1)}" cy="${(ground - h + 11*Math.sin(a)).toFixed(1)}" r="8" fill="${c}" fill-opacity=".8"/>`;
+    }
+    return `<g><path d="M${x} ${ground}V${ground-h}" stroke="#22a046" stroke-width="3"/><ellipse cx="${x+9}" cy="${ground-h/2}" rx="9" ry="4" fill="#22a046" transform="rotate(-30 ${x+9} ${ground-h/2})"/>${p}<circle cx="${x}" cy="${ground-h}" r="6.5" fill="#f5b301"/></g>`;
+  }
+  const petal = ['#f472b6','#60a5fa','#34d399','#c084fc','#fb923c','#f87171'];
+  function scene(){
+    const fl = [[40,60,0],[80,44,2],[250,54,3],[300,40,1],[480,50,4],[530,62,0],[700,48,2],[740,60,5]]
+      .map(f => flower(f[0], 200, f[1], petal[f[2]])).join('');
+    return `<svg viewBox="0 0 780 210" width="100%" aria-hidden="true">
+      <path d="M10 200H770" stroke="#22a046" stroke-width="3" stroke-opacity=".5"/>${fl}
+      <g transform="translate(110,62)">${catInner('#60a5fa','happy')}</g>
+      <g transform="translate(580,62)">${catInner('#fb923c','normal')}</g>
+      <text x="390" y="110" text-anchor="middle" font-size="58">⭐</text>
+    </svg>`;
+  }
+  function catInner(color, mood){ return cat(color, mood, 130).replace(/<svg[^>]*>/,'').replace('</svg>',''); }
+
+  // ---------- sound (optional) ----------
+  let ac = null, soundOn = true;
+  function tone(freqs){
+    if (!soundOn) return;
+    try {
+      ac = ac || new (window.AudioContext || window.webkitAudioContext)();
+      let t = ac.currentTime;
+      freqs.forEach(f => {
+        const o = ac.createOscillator(), g = ac.createGain();
+        o.type = 'triangle'; o.frequency.value = f;
+        g.gain.setValueAtTime(.18, t); g.gain.exponentialRampToValueAtTime(.001, t + .22);
+        o.connect(g); g.connect(ac.destination); o.start(t); o.stop(t + .24); t += .12;
+      });
+    } catch(e){}
+  }
+
+  // ---------- state ----------
+  const st = {name:'', i:0, score:0, per:[0,0,0,0], answered:false, ideas:[], q23:['','','']};
+  const app = document.getElementById('app');
+  const esc = t => String(t).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+  function topbar(){
+    return `<div class="topbar">
+      <div class="brand">🚀 رحلة العباقرة – المستوى الثاني</div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <div class="pill">⭐ <span id="sc">${st.score}</span></div>
+        <button class="iconbtn" id="snd" title="الصوت">${soundOn ? '🔊' : '🔇'}</button>
+      </div></div>`;
+  }
+  function map(cur){
+    return `<div class="map"><div class="line"></div>${S.map((s,k) => {
+      const done = k < cur, act = k === cur;
+      return `<div class="stop ${done?'done':''} ${act?'active':''}">
+        <div class="dot" style="${act||done ? `background:${s.s};border-color:${done?'var(--good)':s.c}` : ''}">${done ? '✅' : s.icon}</div>
+        <div class="lbl">${s.name}</div></div>`;
+    }).join('')}</div>`;
+  }
+  function bindSound(){
+    const b = document.getElementById('snd');
+    if (b) b.onclick = () => { soundOn = !soundOn; b.textContent = soundOn ? '🔊' : '🔇'; };
+  }
+
+  // ---------- screens ----------
+  function start(){
+    app.innerHTML = `<div class="card start center pop">
+      ${scene()}
+      <h1>رحلة العباقرة – المستوى الثاني</h1>
+      <p>تحدٍّ جديد للأعمار من 11 إلى 13 سنة: فكّر بعمق، واجمع النجوم في خمس محطات.</p>
+      <div class="stations-intro">${S.map(s => `<span class="chip" style="background:${s.s};color:${s.c}">${s.icon} ${s.name}</span>`).join('')}</div>
+      <div><input class="nameinput" id="nm" placeholder="اكتب اسمك يا بطل" maxlength="30" value="${esc(st.name)}"></div>
+      <button class="btn" id="go">ابدأ الرحلة 🚀</button>
+      <p class="note" style="margin-top:14px">${TOTAL} سؤالًا + محطة إبداع في النهاية</p>
+    </div>`;
+    document.getElementById('go').onclick = () => {
+      st.name = document.getElementById('nm').value.trim();
+      tone([523,659,784]); question();
+    };
+    document.getElementById('nm').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('go').click(); });
+  }
+
+  function question(){
+    const q = Q[st.i], s = S[q.s];
+    st.answered = false;
+    const inStation = Q.filter(x => x.s === q.s);
+    const pos = inStation.indexOf(q) + 1;
+    const opts = q.o.map((o,k) => `<button class="opt" data-k="${k}"><span class="let" style="background:${s.c}">${LET[k]}</span>${q.arrows ? `<span class="arrow">${arrowBtn(o)}</span>` : `<span>${o}</span>`}</button>`).join('');
+    app.innerHTML = topbar() + map(q.s) + `
+      <div class="card pop" style="border-color:${s.c}">
+        <div class="qhead">
+          <span class="badge" style="background:${s.s};color:${s.c}">${s.icon} محطة ${s.name}</span>
+          <span class="qnum">سؤال ${st.i + 1} من ${TOTAL}</span>
+        </div>
+        <div class="progress"><div style="width:${(pos-1)/inStation.length*100}%;background:${s.c}"></div></div>
+        <h2 class="q">${q.q}</h2>
+        ${q.fig ? `<div class="fig">${q.fig}</div>` : ''}
+        <div class="opts">${opts}</div>
+        <div class="feedback" id="fb"></div>
+      </div>`;
+    bindSound();
+    app.querySelectorAll('.opt').forEach(b => b.onclick = () => answer(+b.dataset.k, b));
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+
+  function burst(el){
+    const r = el.getBoundingClientRect();
+    for (let n = 0; n < 8; n++){
+      const d = document.createElement('div');
+      d.className = 'burst'; d.textContent = n % 2 ? '⭐' : '✨';
+      d.style.left = (r.left + r.width/2) + 'px'; d.style.top = (r.top + r.height/2) + 'px';
+      const a = Math.PI*2*n/8;
+      d.style.setProperty('--dx', Math.cos(a)*90 + 'px'); d.style.setProperty('--dy', Math.sin(a)*90 + 'px');
+      document.body.appendChild(d); setTimeout(() => d.remove(), 1000);
+    }
+  }
+
+  function answer(k, btn){
+    if (st.answered) return;
+    st.answered = true;
+    const q = Q[st.i], ok = k === q.a;
+    const btns = app.querySelectorAll('.opt');
+    btns.forEach(b => b.disabled = true);
+    btns[q.a].classList.add('right');
+    if (ok){ st.score++; st.per[q.s]++; btn.classList.add('right'); burst(btn); tone([660,880]); document.getElementById('sc').textContent = st.score; }
+    else { btn.classList.add('wrong'); tone([300,220]); }
+    const praise = ['أحسنت!','رائع!','عبقري!','ممتاز!','برافو!'];
+    const last = st.i === TOTAL - 1, stationEnd = last || Q[st.i+1].s !== q.s;
+    const fb = document.getElementById('fb');
+    fb.className = 'feedback show pop ' + (ok ? 'ok' : 'no');
+    fb.innerHTML = `<div class="mascot">${cat(ok ? '#60a5fa' : '#fb923c', ok ? 'happy' : 'think', 80)}</div>
+      <div class="msg"><b>${ok ? praise[st.i % praise.length] + ' ⭐' : 'لا بأس، نتعلّم معًا 💡'}</b><span>${q.e}</span></div>
+      <button class="btn green" id="nx">${stationEnd ? 'أنهِ المحطة' : 'التالي'} ⬅</button>`;
+    document.getElementById('nx').onclick = () => {
+      if (stationEnd) stationDone(q.s); else { st.i++; question(); }
+    };
+  }
+
+  function stationDone(si){
+    const s = S[si], got = st.per[si], tot = perStationTotal[si];
+    const stars = '⭐'.repeat(got) + '☆'.repeat(tot - got);
+    const msg = got === tot ? 'علامة كاملة! أنت نجم المحطة 🏆' : got >= tot - 1 ? 'أداء رائع جدًا!' : got >= tot/2 ? 'أحسنت، واصل التقدم!' : 'بداية جيدة، المحطة القادمة لك!';
+    tone([523,659,784,1047]);
+    app.innerHTML = topbar() + map(si + 1) + `
+      <div class="card center pop" style="border-color:${s.c}">
+        ${cat('#60a5fa','happy',120)}
+        <h2 style="font-size:30px;margin:4px 0">أنهيت محطة ${s.name} ${s.icon}</h2>
+        <div class="stars-big">${stars}</div>
+        <p style="font-size:20px;margin:6px 0 16px">${got} من ${tot} — ${msg}</p>
+        <button class="btn" id="cont">${si < 3 ? 'إلى محطة ' + S[si+1].name + ' 🚀' : 'إلى محطة الإبداع 🎨'}</button>
+      </div>`;
+    bindSound();
+    document.getElementById('cont').onclick = () => {
+      if (si < 3){ st.i++; question(); } else creative();
+    };
+  }
+
+  function garden(){
+    const n = st.ideas.length;
+    let g = '';
+    for (let k = 0; k < Math.max(n, 0); k++){
+      const x = 40 + (k % 12) * 60 + (Math.floor(k/12) * 30);
+      g += flower(x, 110, 40 + (k*17) % 34, petal[k % petal.length]);
+    }
+    return `<svg viewBox="0 0 780 120" width="100%" aria-hidden="true"><path d="M10 110H770" stroke="#22a046" stroke-width="3" stroke-opacity=".5"/>${g}
+      ${n === 0 ? '<text x="390" y="70" text-anchor="middle" font-size="18" fill="#6b6280">كل حل يزرع وردة في حديقتك 🌱</text>' : ''}</svg>`;
+  }
+
+  function creative(){
+    const s = S[4];
+    app.innerHTML = topbar() + map(4) + `
+      <div class="card pop" style="border-color:${s.c}">
+        <span class="badge" style="background:${s.s};color:${s.c}">🎨 محطة الإبداع</span>
+        <h2 class="q">26) اقترح أكبر عدد ممكن من الحلول المبتكرة لتخفيف الازدحام عند بوابة المدرسة وقت الانصراف 🏫</h2>
+        <p class="note">اكتب حلًّا ثم اضغط «أضف». كل حل يزرع وردة في حديقتك!</p>
+        <div class="ideas"><input id="idea" placeholder="مثلًا: انصراف الصفوف على دفعات ⏱️" maxlength="80"><button class="btn" id="add" style="padding:8px 20px;font-size:19px">أضف 🌸</button></div>
+        <div class="idea-list" id="list"></div>
+        <div class="garden" id="gd">${garden()}</div>
+        <h2 class="q" style="margin-top:22px">27) لو كنت مخترعًا: صمّم جهازًا يساعد كبار السن في حياتهم اليومية 💡</h2>
+        <div class="q23">
+          <input id="r0" placeholder="اسم الجهاز" value="${esc(st.q23[0])}">
+          <input id="r1" placeholder="الوظيفة الأولى" value="${esc(st.q23[1])}">
+          <input id="r2" placeholder="الوظيفة الثانية" value="${esc(st.q23[2])}">
+        </div>
+        <div class="center" style="margin-top:16px"><button class="btn green" id="fin">أنهيت الرحلة 🏁</button></div>
+      </div>`;
+    bindSound();
+    const inp = document.getElementById('idea');
+    const drawList = () => {
+      document.getElementById('list').innerHTML = st.ideas.map((t,k) => `<span class="tag">🌸 ${esc(t)} <button data-k="${k}" title="حذف">✕</button></span>`).join('');
+      document.getElementById('gd').innerHTML = garden();
+      document.querySelectorAll('#list button').forEach(b => b.onclick = () => { st.ideas.splice(+b.dataset.k, 1); drawList(); });
+    };
+    const add = () => {
+      const t = inp.value.trim(); if (!t) return;
+      st.ideas.push(t); inp.value = ''; tone([784,988]); drawList(); inp.focus();
+    };
+    document.getElementById('add').onclick = add;
+    inp.addEventListener('keydown', e => { if (e.key === 'Enter'){ e.preventDefault(); add(); } });
+    drawList();
+    document.getElementById('fin').onclick = () => {
+      st.q23 = [0,1,2].map(k => document.getElementById('r'+k).value.trim());
+      result();
+    };
+  }
+
+  function result(){
+    const sc = st.score;
+    const lvl = sc >= 23 ? ['عبقري متميز جدًا 🏆','#16a34a'] : sc >= 18 ? ['متميز 🌟','#3b82f6'] : sc >= 13 ? ['جيد جدًا، واصل التدريب 💪','#9333ea'] : ['بداية جميلة! تدرّب أكثر وستتفوق 🌱','#ea580c'];
+    const starsN = Math.round(sc / TOTAL * 5);
+    const rows = S.slice(0,4).map((s,k) => {
+      const v = st.per[k], t = perStationTotal[k];
+      return `<div class="row"><span class="name">${s.icon} ${s.name}</span><div class="bar"><div style="width:${v/t*100}%;background:${s.c}"></div></div><span class="val">${v}/${t}</span></div>`;
+    }).join('');
+    const summary = [
+      'نتيجة لعبة: رحلة العباقرة – المستوى الثاني',
+      'الاسم: ' + (st.name || '—'),
+      'الدرجة في الأسئلة الموضوعية: ' + sc + ' من ' + TOTAL,
+      ...S.slice(0,4).map((s,k) => '• ' + s.name + ': ' + st.per[k] + ' من ' + perStationTotal[k]),
+      '',
+      'سؤال 26 (حلول ازدحام بوابة المدرسة) – عدد الحلول: ' + st.ideas.length,
+      ...st.ideas.map((t,k) => (k+1) + ') ' + t),
+      '',
+      'سؤال 27 (جهاز لمساعدة كبار السن):',
+      'اسم الجهاز: ' + (st.q23[0] || '—'),
+      'الوظيفة الأولى: ' + (st.q23[1] || '—'),
+      'الوظيفة الثانية: ' + (st.q23[2] || '—'),
+      '',
+      'أسئلة الإبداع (10 درجات) يصححها المعلم حسب معايير الطلاقة والمرونة والأصالة.'
+    ].join('\n');
+    tone([523,659,784,1047,1319]);
+    app.innerHTML = topbar() + map(5) + `
+      <div class="card center pop" style="border-color:${lvl[1]}">
+        ${scene()}
+        <h2 style="font-size:32px;margin:0">${st.name ? 'أحسنت يا ' + esc(st.name) + '!' : 'أحسنت يا بطل!'}</h2>
+        <div class="stars-big">${'⭐'.repeat(starsN)}${'☆'.repeat(5 - starsN)}</div>
+        <p style="font-size:24px;margin:4px 0"><b>${sc}</b> من ${TOTAL} نجمة</p>
+        <p style="font-size:22px;font-weight:800;color:${lvl[1]};margin:0 0 6px">${lvl[0]}</p>
+        <div class="rows" style="text-align:right">${rows}
+          <div class="row"><span class="name">🎨 الإبداع</span><div class="bar"><div style="width:${Math.min(st.ideas.length,10)*10}%;background:var(--create)"></div></div><span class="val">🌸${st.ideas.length}</span></div>
+        </div>
+        <p class="note">أفكارك في محطة الإبداع يقرؤها المعلم ويمنحك درجتها 🌸</p>
+        <div style="text-align:right;margin-top:14px">
+          <b>ملخص للمعلم:</b>
+          <textarea id="sum" rows="8" readonly style="margin-top:6px">${esc(summary)}</textarea>
+        </div>
+        <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:12px">
+          <button class="btn ghost" id="cp">📋 نسخ الملخص</button>
+          <button class="btn" id="again">🔁 العب مرة أخرى</button>
+        </div>
+        <span id="cpd"></span>
+      </div>`;
+    bindSound();
+    document.getElementById('cp').onclick = async () => {
+      const ta = document.getElementById('sum');
+      try { await navigator.clipboard.writeText(ta.value); document.getElementById('cpd').innerHTML = '<span class="copied">تم النسخ ✅</span>'; }
+      catch(e){ ta.focus(); ta.select(); document.getElementById('cpd').innerHTML = '<span class="note">حدّد النص وانسخه يدويًا</span>'; }
+    };
+    document.getElementById('again').onclick = () => {
+      Object.assign(st, {i:0, score:0, per:[0,0,0,0], answered:false, ideas:[], q23:['','','']});
+      start();
+    };
+  }
+
+  start();
+})();
+</script>
+</body>
+</html>
